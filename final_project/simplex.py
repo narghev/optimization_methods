@@ -1,6 +1,48 @@
 from heapq import nsmallest
 import numpy
 
+def identity(numRows, numCols, val=1, rowStart=0):
+   return [[(val if i == j else 0) for j in range(numCols)]
+               for i in range(rowStart, numRows)]
+
+def standardForm(cost, greaterThans=[], gtThreshold=[], lessThans=[], ltThreshold=[],
+                equalities=[], eqThreshold=[], maximization=True):
+
+   newVars = 0
+   numRows = 0
+   if gtThreshold != []:
+      newVars += len(gtThreshold)
+      numRows += len(gtThreshold)
+   if ltThreshold != []:
+      newVars += len(ltThreshold)
+      numRows += len(ltThreshold)
+   if eqThreshold != []:
+      numRows += len(eqThreshold)
+
+   if not maximization:
+      cost = [-x for x in cost]
+
+   if newVars == 0:
+      return cost, equalities, eqThreshold
+
+   newCost = list(cost) + [0] * newVars
+
+   constraints = []
+   threshold = []
+
+   oldConstraints = [(greaterThans, gtThreshold, -1), (lessThans, ltThreshold, 1),
+                     (equalities, eqThreshold, 0)]
+
+   offset = 0
+   for constraintList, oldThreshold, coefficient in oldConstraints:
+      constraints += [c + r for c, r in zip(constraintList,
+         identity(numRows, newVars, coefficient, offset))]
+
+      threshold += oldThreshold
+      offset += len(oldThreshold)
+
+   return newCost, constraints, threshold
+
 def column(matrix, i):
    return [row[i] for row in matrix]
 
@@ -114,16 +156,27 @@ def addSlackVariables(A, c):
 
    return A, c
 
+# Use this if not standardizing
 def solveSimplex(c, A, b):
    slacked_A, slacked_c = addSlackVariables(A, c)
    return simplex(slacked_c, slacked_A, b)
 
-
 if __name__ == "__main__":
-   c = [8, 10, 7]
-   A = [[1, 3, 2], [1, 5, 1]]
-   b = [10, 8]
+   c = [-1, -4, -2, -4]
+   greaterThans = [[4, 2, -4, -1], [0, -1, 0, 1]]
+   gtThreshold = [10, 10]
+   lessThans = [[2, 3, 4, 1]]
+   ltThreshold = [20]
 
-   t, s, v = solveSimplex(c, A, b)
+   c, A, b = standardForm(
+      cost = c,
+      greaterThans = greaterThans,
+      gtThreshold = gtThreshold,
+      lessThans = lessThans,
+      ltThreshold = ltThreshold,
+      maximization=False
+   )
+
+   t, s, v = simplex(c, A, b)
    print(s)
    print(v)
