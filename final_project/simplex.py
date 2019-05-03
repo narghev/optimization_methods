@@ -162,19 +162,24 @@ def solveSimplex(c, A, b):
    return simplex(slacked_c, slacked_A, b)
 
 if __name__ == "__main__":
-   c = [-1, -4, -2, -4]
-   greaterThans = [[4, 2, -4, -1], [0, -1, 0, 1]]
-   gtThreshold = [10, 10]
-   lessThans = [[2, 3, 4, 1]]
-   ltThreshold = [20]
+   c = [8, 10, 7]
+
+   lessThans = [
+      [1, 3, 2],
+      [1, 5, 1],
+   ]
+   ltThreshold = [10, 8]
+   
+   greaterThans = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+   gtThreshold = [0, 0, 0]
 
    c, A, b = standardForm(
       cost = c,
-      greaterThans = greaterThans,
-      gtThreshold = gtThreshold,
       lessThans = lessThans,
       ltThreshold = ltThreshold,
-      maximization=False
+      greaterThans = greaterThans,
+      gtThreshold = gtThreshold,
+      maximization = True
    )
 
    t, s, v = simplex(c, A, b)
